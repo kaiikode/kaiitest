@@ -4,9 +4,6 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }],
   },
-  experimental: {
-    typedRoutes: false,
-  },
 };
 
 export default nextConfig;

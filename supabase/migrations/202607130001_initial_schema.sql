@@ -94,6 +94,26 @@ as $$
   );
 $$;
 
+create or replace function public.is_wedding_creator(target_wedding_id uuid)
+returns boolean language sql stable security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.weddings
+    where id = target_wedding_id and created_by = auth.uid()
+  );
+$$;
+
+create or replace function public.can_manage_membership(target_wedding_id uuid)
+returns boolean language sql stable security definer set search_path = public
+as $$
+  select public.is_admin() or exists (
+    select 1 from public.wedding_members
+    where wedding_id = target_wedding_id
+      and user_id = auth.uid()
+      and member_role in ('owner', 'coordinator')
+  );
+$$;
+
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public
 as $$
@@ -108,6 +128,24 @@ $$;
 create trigger on_auth_user_created
 after insert on auth.users
 for each row execute procedure public.handle_new_user();
+
+create or replace function public.protect_profile_role()
+returns trigger language plpgsql security definer set search_path = public
+as $$
+begin
+  if auth.uid() is not null
+    and new.role is distinct from old.role
+    and not public.is_admin()
+  then
+    raise exception 'Only administrators may change profile roles';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger protect_profile_role_before_update
+before update on public.profiles
+for each row execute function public.protect_profile_role();
 
 create table public.checklist_tasks (
   id uuid primary key default gen_random_uuid(),
@@ -448,27 +486,18 @@ create policy "members read wedding" on public.wedding_members
 for select using (public.can_access_wedding(wedding_id));
 create policy "members insert owners or admins" on public.wedding_members
 for insert with check (
-  public.is_admin() or user_id = auth.uid() or exists (
-    select 1 from public.wedding_members existing
-    where existing.wedding_id = wedding_members.wedding_id
-      and existing.user_id = auth.uid()
-      and existing.member_role in ('owner', 'coordinator')
+  public.can_manage_membership(wedding_id)
+  or (
+    user_id = auth.uid()
+    and public.is_wedding_creator(wedding_id)
+    and member_role = 'owner'
   )
 );
 create policy "members update owners or admins" on public.wedding_members
-for update using (public.is_admin() or exists (
-  select 1 from public.wedding_members existing
-  where existing.wedding_id = wedding_members.wedding_id
-    and existing.user_id = auth.uid()
-    and existing.member_role in ('owner', 'coordinator')
-));
+for update using (public.can_manage_membership(wedding_id))
+with check (public.can_manage_membership(wedding_id));
 create policy "members delete owners or admins" on public.wedding_members
-for delete using (public.is_admin() or exists (
-  select 1 from public.wedding_members existing
-  where existing.wedding_id = wedding_members.wedding_id
-    and existing.user_id = auth.uid()
-    and existing.member_role = 'owner'
-));
+for delete using (public.can_manage_membership(wedding_id));
 
 -- Standard wedding-owned records.
 do $$
@@ -623,3 +652,5 @@ grant execute on function public.is_admin() to authenticated;
 grant execute on function public.is_staff() to authenticated;
 grant execute on function public.can_access_wedding(uuid) to authenticated;
 grant execute on function public.can_manage_wedding(uuid) to authenticated;
+grant execute on function public.is_wedding_creator(uuid) to authenticated;
+grant execute on function public.can_manage_membership(uuid) to authenticated;

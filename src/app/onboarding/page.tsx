@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { Button, Field, Input, Select } from "@/components/ui";
@@ -38,6 +38,7 @@ const schema = z
   });
 
 type FormValues = z.infer<typeof schema>;
+type FormInput = z.input<typeof schema>;
 
 const steps = [
   {
@@ -63,9 +64,9 @@ export default function OnboardingPage() {
     register,
     handleSubmit,
     trigger,
-    watch,
+    control,
     formState: { errors },
-  } = useForm<FormValues>({
+  } = useForm<FormInput, object, FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       bookingStatus: "",
@@ -75,6 +76,7 @@ export default function OnboardingPage() {
       planningStage: "",
     },
   });
+  const dateCertainty = useWatch({ control, name: "dateCertainty" });
 
   const next = async () => {
     const fields: (keyof FormValues)[][] = [
@@ -208,10 +210,10 @@ export default function OnboardingPage() {
                     <option>Still deciding</option>
                   </Select>
                 </Field>
-                {watch("dateCertainty") !== "Still deciding" && (
+                {dateCertainty !== "Still deciding" && (
                   <Field
                     label={
-                      watch("dateCertainty") === "Month and year"
+                      dateCertainty === "Month and year"
                         ? "Preferred month"
                         : "Wedding date"
                     }
@@ -219,9 +221,7 @@ export default function OnboardingPage() {
                   >
                     <Input
                       type={
-                        watch("dateCertainty") === "Month and year"
-                          ? "month"
-                          : "date"
+                        dateCertainty === "Month and year" ? "month" : "date"
                       }
                       {...register("weddingDate")}
                     />

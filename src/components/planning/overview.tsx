@@ -33,15 +33,18 @@ export function OverviewSection() {
   const [profile, setProfile] = useState<Onboarding>({});
 
   useEffect(() => {
+    let timeoutId: number | undefined;
     const saved = localStorage.getItem("padua-onboarding");
     if (saved) {
       try {
-        setProfile(JSON.parse(saved) as Onboarding);
+        const parsed = JSON.parse(saved) as Onboarding;
+        timeoutId = window.setTimeout(() => setProfile(parsed), 0);
       } catch {
         localStorage.removeItem("padua-onboarding");
       }
     }
     if (search.get("welcome")) toast.success("Your planning space is ready.");
+    return () => window.clearTimeout(timeoutId);
   }, [search]);
 
   const names =
