@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { Button, Card, Input, Select, Textarea } from "@/components/ui";
 import { venueSpaces } from "@/lib/demo-data";
+import { usePersistentState } from "@/lib/use-persistent-state";
 import { SectionHeading } from "./section-heading";
 
 const areas = [
@@ -164,11 +165,12 @@ const fields: Record<
 
 export function VenueSection() {
   const [active, setActive] = useState("ceremony");
-  const [favorites, setFavorites] = useState<string[]>([
-    "Courtyard",
-    "Olive trees",
-  ]);
-  const [photoNotes, setPhotoNotes] = useState(
+  const [favorites, setFavorites] = usePersistentState<string[]>(
+    "venue-photo-favorites",
+    ["Courtyard", "Olive trees"],
+  );
+  const [photoNotes, setPhotoNotes] = usePersistentState(
+    "venue-photo-notes",
     "Prioritize quiet portraits before guest arrival and architectural frames near the courtyard.",
   );
   const activeArea = areas.find((area) => area.id === active)!;

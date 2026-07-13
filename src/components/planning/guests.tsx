@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Badge, Button, Card, Input, Select } from "@/components/ui";
 import { initialGuests, type Guest } from "@/lib/demo-data";
 import { track } from "@/lib/analytics";
+import { usePersistentState } from "@/lib/use-persistent-state";
 import { SectionHeading } from "./section-heading";
 
 const statusTone = (status: Guest["status"]) =>
@@ -18,7 +19,7 @@ const statusTone = (status: Guest["status"]) =>
         : "stone";
 
 export function GuestsSection() {
-  const [guests, setGuests] = useState(initialGuests);
+  const [guests, setGuests] = usePersistentState("guests", initialGuests);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All statuses");
   const [sortAsc, setSortAsc] = useState(true);

@@ -21,10 +21,11 @@ import { toast } from "sonner";
 import { Badge, Button, Card, Input, Select, Textarea } from "@/components/ui";
 import { couple, notes as initialNotes } from "@/lib/demo-data";
 import { track } from "@/lib/analytics";
+import { usePersistentState } from "@/lib/use-persistent-state";
 import { SectionHeading } from "./section-heading";
 
 export function NotesSection() {
-  const [notes, setNotes] = useState(initialNotes);
+  const [notes, setNotes] = usePersistentState("notes", initialNotes);
   const [showAdd, setShowAdd] = useState(false);
   const [draft, setDraft] = useState({
     title: "",
@@ -189,29 +190,32 @@ type MockDocument = {
 };
 
 export function DocumentsSection() {
-  const [documents, setDocuments] = useState<MockDocument[]>([
-    {
-      id: "d1",
-      name: "Padua venue agreement.pdf",
-      category: "Contracts",
-      size: "2.4 MB",
-      date: "Jul 10, 2026",
-    },
-    {
-      id: "d2",
-      name: "Photography estimate.pdf",
-      category: "Estimates",
-      size: "842 KB",
-      date: "Jul 8, 2026",
-    },
-    {
-      id: "d3",
-      name: "Courtyard inspiration.jpg",
-      category: "Inspiration files",
-      size: "1.1 MB",
-      date: "Jul 6, 2026",
-    },
-  ]);
+  const [documents, setDocuments] = usePersistentState<MockDocument[]>(
+    "documents",
+    [
+      {
+        id: "d1",
+        name: "Padua venue agreement.pdf",
+        category: "Contracts",
+        size: "2.4 MB",
+        date: "Jul 10, 2026",
+      },
+      {
+        id: "d2",
+        name: "Photography estimate.pdf",
+        category: "Estimates",
+        size: "842 KB",
+        date: "Jul 8, 2026",
+      },
+      {
+        id: "d3",
+        name: "Courtyard inspiration.jpg",
+        category: "Inspiration files",
+        size: "1.1 MB",
+        date: "Jul 6, 2026",
+      },
+    ],
+  );
   const [category, setCategory] = useState("Contracts");
   const fileInput = useRef<HTMLInputElement>(null);
   const upload = (files?: FileList | null) => {
@@ -337,7 +341,7 @@ export function DocumentsSection() {
 export function TeamSection() {
   const [category, setCategory] = useState("General Help");
   const [message, setMessage] = useState("");
-  const [history, setHistory] = useState([
+  const [history, setHistory] = usePersistentState("message-history", [
     {
       from: "Claire Bennett",
       subject: "Your planning introduction",
@@ -516,7 +520,9 @@ export function TeamSection() {
 }
 
 export function FinalDetailsSection() {
-  const [done, setDone] = useState<string[]>(["Final walkthrough scheduled"]);
+  const [done, setDone] = usePersistentState<string[]>("final-details", [
+    "Final walkthrough scheduled",
+  ]);
   const items = [
     "Final walkthrough scheduled",
     "Final guest count submitted",

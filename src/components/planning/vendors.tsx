@@ -7,10 +7,11 @@ import { Badge, Button, Card, Input, Select, Textarea } from "@/components/ui";
 import { initialVendors, type Vendor } from "@/lib/demo-data";
 import { track } from "@/lib/analytics";
 import { currency } from "@/lib/utils";
+import { usePersistentState } from "@/lib/use-persistent-state";
 import { SectionHeading } from "./section-heading";
 
 export function VendorsSection() {
-  const [vendors, setVendors] = useState(initialVendors);
+  const [vendors, setVendors] = usePersistentState("vendors", initialVendors);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All categories");
   const [showAdd, setShowAdd] = useState(false);

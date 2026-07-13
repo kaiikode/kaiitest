@@ -8,12 +8,16 @@ import { Badge, Button, Card, Input, Select } from "@/components/ui";
 import { couple, initialBudget, type BudgetItem } from "@/lib/demo-data";
 import { track } from "@/lib/analytics";
 import { currency } from "@/lib/utils";
+import { usePersistentState } from "@/lib/use-persistent-state";
 import { SectionHeading } from "./section-heading";
 
 export function BudgetSection() {
-  const [items, setItems] = useState(initialBudget);
+  const [items, setItems] = usePersistentState("budget-items", initialBudget);
   const [showAdd, setShowAdd] = useState(false);
-  const [target, setTarget] = useState(couple.targetBudget);
+  const [target, setTarget] = usePersistentState(
+    "budget-target",
+    couple.targetBudget,
+  );
   const [draft, setDraft] = useState({
     name: "",
     category: "Venue",

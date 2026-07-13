@@ -5,6 +5,7 @@ import { Heart, Link2, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Card, Input, Select, Textarea } from "@/components/ui";
 import { inspiration as initialInspiration } from "@/lib/demo-data";
+import { usePersistentState } from "@/lib/use-persistent-state";
 import { SectionHeading } from "./section-heading";
 
 type InspirationItem = (typeof initialInspiration)[number] & {
@@ -15,7 +16,10 @@ type InspirationItem = (typeof initialInspiration)[number] & {
 };
 
 export function InspirationSection() {
-  const [items, setItems] = useState<InspirationItem[]>(initialInspiration);
+  const [items, setItems] = usePersistentState<InspirationItem[]>(
+    "inspiration",
+    initialInspiration,
+  );
   const [showAdd, setShowAdd] = useState(false);
   const [draft, setDraft] = useState({
     image: "",

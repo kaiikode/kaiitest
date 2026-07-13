@@ -35,6 +35,7 @@ import {
   type TaskStatus,
 } from "@/lib/demo-data";
 import { track } from "@/lib/analytics";
+import { usePersistentState } from "@/lib/use-persistent-state";
 import { SectionHeading } from "./section-heading";
 
 function SortableTask({
@@ -122,7 +123,7 @@ function SortableTask({
 }
 
 export function ChecklistSection() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = usePersistentState("checklist-tasks", initialTasks);
   const [category, setCategory] = useState("All categories");
   const [status, setStatus] = useState("All statuses");
   const [showAdd, setShowAdd] = useState(false);

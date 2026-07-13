@@ -20,6 +20,7 @@ import { Clock3, GripVertical, List, Plus, Route } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Card, Input, Select, Textarea } from "@/components/ui";
 import { dayTimeline, planningTimeline } from "@/lib/demo-data";
+import { usePersistentState } from "@/lib/use-persistent-state";
 import { SectionHeading } from "./section-heading";
 
 type DayItem = (typeof dayTimeline)[number] & {
@@ -69,7 +70,8 @@ function SortableTimelineItem({ item }: { item: DayItem }) {
 export function TimelineSection() {
   const [mode, setMode] = useState<"planning" | "day">("planning");
   const [view, setView] = useState<"visual" | "list">("visual");
-  const [items, setItems] = useState<DayItem[]>(
+  const [items, setItems] = usePersistentState<DayItem[]>(
+    "wedding-day-timeline",
     dayTimeline.map((item, index) => ({ ...item, id: `day-${index}` })),
   );
   const [showAdd, setShowAdd] = useState(false);
