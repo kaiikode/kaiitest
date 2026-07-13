@@ -3,7 +3,7 @@
 import {
   useCallback,
   useMemo,
-  useRef,
+  useState,
   useSyncExternalStore,
   type SetStateAction,
 } from "react";
@@ -18,7 +18,7 @@ export function usePersistentState<T>(
   initialValue: T,
 ): [T, (value: SetStateAction<T>) => void] {
   const storageKey = `padua-planning:${key}`;
-  const initialSnapshot = useRef(JSON.stringify(initialValue));
+  const [initialSnapshot] = useState(() => JSON.stringify(initialValue));
   const eventName = `padua-storage:${storageKey}`;
 
   const serialized = useSyncExternalStore(
@@ -43,26 +43,26 @@ export function usePersistentState<T>(
       [eventName, storageKey],
     ),
     useCallback(
-      () => localStorage.getItem(storageKey) ?? initialSnapshot.current,
-      [storageKey],
+      () => localStorage.getItem(storageKey) ?? initialSnapshot,
+      [initialSnapshot, storageKey],
     ),
-    useCallback(() => initialSnapshot.current, []),
+    useCallback(() => initialSnapshot, [initialSnapshot]),
   );
 
   const state = useMemo(() => {
     try {
       return JSON.parse(serialized) as T;
     } catch {
-      return JSON.parse(initialSnapshot.current) as T;
+      return JSON.parse(initialSnapshot) as T;
     }
-  }, [serialized]);
+  }, [initialSnapshot, serialized]);
 
   const setState = useCallback(
     (value: SetStateAction<T>) => {
       let current = initialValue;
       try {
         current = JSON.parse(
-          localStorage.getItem(storageKey) ?? initialSnapshot.current,
+          localStorage.getItem(storageKey) ?? initialSnapshot,
         ) as T;
       } catch {
         // Fall back to the component's initial state.
@@ -74,7 +74,7 @@ export function usePersistentState<T>(
       localStorage.setItem(storageKey, JSON.stringify(next));
       window.dispatchEvent(new Event(eventName));
     },
-    [eventName, initialValue, storageKey],
+    [eventName, initialSnapshot, initialValue, storageKey],
   );
 
   return [state, setState];
